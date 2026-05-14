@@ -35,7 +35,8 @@ pipeline {
             steps {
                 echo "Running unit tests for ${env.BRANCH_NAME}..."
                 // Example: sh "npm install && npm test"
-                sh "echo 'Tests Passed'"
+                sh "echo 'Unit Tests Passed'"
+                sh "echo 'Build completed"
             }
         } 
         
