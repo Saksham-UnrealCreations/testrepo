@@ -46,8 +46,6 @@ pipeline {
                     //withSonarQubeEnv('MySonarServer') {
                         echo "Analyzing Code Quality..."
                         //sh "${MAVEN_HOME}/bin/mvn sonar:sonar"
-                    }
-                }
             }
         }
         
@@ -84,7 +82,6 @@ pipeline {
                         echo "SIT Passed! Promoting to UAT for Business Sign-off..."
                         //sh "helm upgrade --install ${APP_NAME}-uat ./charts --namespace uat --set image.tag=${UAT_TAG}"
             }
-          }
        }
        
        stage('7. UAT Approval') {
