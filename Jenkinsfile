@@ -1,6 +1,7 @@
+
 pipeline {
     agent any
-    
+
     environment {
         // Dynamic Naming logic
         /*APP_NAME     = "orders-service"
@@ -9,56 +10,57 @@ pipeline {
         // Use Git SHA for the tag to ensure uniqueness
         GIT_SHA      = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
         //IMAGE_NAME   = "${DOCKER_REG}/${APP_NAME}:${GIT_SHA}"
-        
+
         // Define Namespaces
         /*SIT_NS  = "sit-preview"
         UAT_NS  = "uat-environment"
         PROD_NS = "production"
         */
-        
+
         // PR Specific Logic
-        PR_ID        = "${env.CHANGE_ID}" 
+        PR_ID        = "${env.CHANGE_ID}"
         //RELEASE_NAME = "orders-pr-${PR_ID}"
     }
-    
+
     stages {
         stage('1. Checkout SCM') {
             steps {
-                // In Multibranch, 'checkout scm' automatically pulls the 
+                // In Multibranch, 'checkout scm' automatically pulls the
                 // specific branch that triggered the build.
                 checkout scm
                 echo "Successfully checked out branch: ${env.BRANCH_NAME}"
             }
         }
-        
+
         stage('2. Build & Test') {
             steps {
                 echo "Running unit tests for ${env.BRANCH_NAME}..."
                 // Example: sh "npm install && npm test"
                 sh "echo 'Unit Tests Passed'"
-                sh "echo 'Build completed"
+                sh "echo 'Build completed'"
             }
-        } 
-        
+        }
+
         stage('3. SonarQube Quality Gate') {
             // We scan during the PR phase to prevent "bad code" from being merged
             when { changeRequest() }
             steps {
-                    //withSonarQubeEnv('MySonarServer') {
+                    //withSonarQubeEnv('MySonarServer'){
                         echo "Analyzing Code Quality..."
                         //sh "${MAVEN_HOME}/bin/mvn sonar:sonar"
+                    //}
             }
         }
-        
+
         stage('4. Docker Build & Push') {
-            when { changeRequest() } 
+            when { changeRequest() }
             steps {
                  sh "echo 'Image build and push'"
                 //sh "docker build -t ${IMAGE_NAME} ."
                 //sh "docker push ${IMAGE_NAME}"
             }
         }
-        
+
         stage('5. Deploy to SIT (Ephemeral)') {
             when { changeRequest() }
             steps {
@@ -73,7 +75,7 @@ pipeline {
                 */
             }
         }
-        
+
         stage('6. Promote to UAT') {
             when { changeRequest() }
             steps {
@@ -84,7 +86,7 @@ pipeline {
                         //sh "helm upgrade --install ${APP_NAME}-uat ./charts --namespace uat --set image.tag=${UAT_TAG}"
             }
        }
-       
+
        stage('7. UAT Approval') {
             when { changeRequest() }
             steps {
@@ -93,7 +95,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('8. Final Release') {
             when { branch 'main' }
             steps {
@@ -103,12 +105,12 @@ pipeline {
                     sh "docker tag ${DOCKER_REG}/${APP_NAME}:${UAT_TAG} ${DOCKER_REG}/${APP_NAME}:${PROD_TAG}"
                     sh "docker push ${DOCKER_REG}/${APP_NAME}:${PROD_TAG}"
                     sh "helm upgrade --install ${APP_NAME}-prod ./charts --namespace production --set image.tag=${PROD_TAG}"
-                    */    
+                    */
                 }
             }
         }
     }
-    
+
         post {
         aborted {
             // Triggered if the 5-day timeout hits
@@ -119,7 +121,7 @@ pipeline {
                 }
             }
         }
-        
+
         success {
             script {
                 if (env.BRANCH_NAME == 'main') {
@@ -140,5 +142,8 @@ pipeline {
             // Clear local workspace to keep Jenkins server clean
             cleanWs()
         }
-    }   
-}   
+    }
+}
+
+
+
