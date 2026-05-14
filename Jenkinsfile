@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -130,20 +129,19 @@ pipeline {
             }
         }
 
-        always {
-            script {
-                // If a PR is merged, we clean up the SIT environment automatically
-                // This logic would be triggered by a separate cleanup job or GitHub Webhook
-                if (isPrMerged()) {
-                     echo "PR merged. Deleting SIT Pods for PR-${PR_ID} to save costs."
-                    //sh "helm uninstall ${RELEASE_NAME} --namespace ${SIT_NS} || true"
-                }
+       always {
+           script {
+               // Check if we are on the main branch (which means the PR is now merged)
+               if (env.BRANCH_NAME == 'main') {
+               echo "PR merged or code pushed to main. Cleaning up ephemeral resources..."
+               // sh "helm uninstall ${RELEASE_NAME} --namespace ${SIT_NS} || true"
             }
-            // Clear local workspace to keep Jenkins server clean
-            cleanWs()
+        }
+        cleanWs() // This is a built-in method, it will work fine
         }
     }
 }
+
 
 
 
